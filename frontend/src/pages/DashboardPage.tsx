@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Loader2, ClipboardList, AlertCircle } from 'lucide-react';
+import { Plus, Loader2, ClipboardList, AlertCircle, Search } from 'lucide-react';
 import { Navbar } from '../components/Navbar';
 import { TaskCard } from '../components/TaskCard';
 import { TaskModal } from '../components/TaskModal';
@@ -22,15 +22,55 @@ const filterTabs: { value: FilterOption; label: string }[] = [
 
 export function DashboardPage() {
     const [activeFilter, setActiveFilter] = useState<FilterOption>('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
 
     const queryStatus = activeFilter === 'all' ? undefined : activeFilter;
     const { data: tasks, isLoading, isError, refetch } = useTasks(queryStatus);
 
+    const sortedTasks = tasks
+        ? [...tasks]
+            .filter((task) => task.title.toLowerCase().includes(searchQuery.toLowerCase()))
+            .filter((task) => {
+                if (!selectedDate) return true;
+                if (!task.dueDate) return false;
+                return task.dueDate.split('T')[0] === selectedDate;
+            })
+            .sort((a, b) => {
+                const statusOrder = { in_progress: 1, todo: 2, done: 3 };
+                return statusOrder[a.status] - statusOrder[b.status];
+            })
+        : undefined;
+
     const createTaskMutation = useCreateTask();
     const updateTaskMutation = useUpdateTask();
     const deleteTaskMutation = useDeleteTask();
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const getLocalDateString = (d: Date) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const dateBlocks = Array.from({ length: 21 }).map((_, i) => {
+        const d = new Date(today);
+        d.setDate(today.getDate() - 3 + i);
+        return {
+            dateString: getLocalDateString(d),
+            dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
+            dayNum: d.getDate(),
+        };
+    });
+
+    const datesWithTasks = new Set(
+        tasks?.filter(t => t.dueDate).map(t => t.dueDate!.split('T')[0]) || []
+    );
 
     const handleOpenCreateModal = () => {
         setEditingTask(null);
@@ -95,23 +135,77 @@ export function DashboardPage() {
                     </button>
                 </div>
 
-                <div className="mt-6 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-4">
-                    {filterTabs.map((tab) => {
-                        const isActive = activeFilter === tab.value;
-                        return (
-                            <button
-                                key={tab.value}
-                                type="button"
-                                onClick={() => setActiveFilter(tab.value)}
-                                className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${isActive
-                                    ? 'bg-slate-900 text-white shadow-xs'
-                                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-slate-900'
-                                    }`}
-                            >
-                                {tab.label}
-                            </button>
-                        );
-                    })}
+                <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                        {filterTabs.map((tab) => {
+                            const isActive = activeFilter === tab.value;
+                            return (
+                                <button
+                                    key={tab.value}
+                                    type="button"
+                                    onClick={() => setActiveFilter(tab.value)}
+                                    className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${isActive
+                                        ? 'bg-slate-900 text-white shadow-xs'
+                                        : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-slate-900'
+                                        }`}
+                                >
+                                    {tab.label}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <div className="relative w-full sm:w-64 shrink-0">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <Search className="h-4 w-4 text-slate-400" />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search tasks..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="block border w-full rounded-lg border-slate-200 bg-white py-1.5 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+                        />
+                    </div>
+                </div>
+
+                <div className="mt-6 flex items-center gap-3 overflow-x-auto pb-4 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
+                    <div className="flex shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white p-2 h-[56px]">
+                        <input
+                            type="date"
+                            title="Select a specific date"
+                            value={selectedDate || ''}
+                            onChange={(e) => setSelectedDate(e.target.value || null)}
+                            className="border-none bg-transparent text-sm font-medium text-slate-700 outline-none w-auto"
+                        />
+                    </div>
+
+                    <div className="h-8 w-px bg-slate-200 shrink-0 mx-1"></div>
+
+                    <button
+                        onClick={() => setSelectedDate(null)}
+                        className={`shrink-0 rounded-xl px-4 py-2 text-sm font-medium transition border h-[56px] flex items-center justify-center ${!selectedDate ? 'bg-slate-900 border-slate-900 text-white shadow-md' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}`}
+                    >
+                        Any Date
+                    </button>
+
+                    {dateBlocks.map(block => (
+                        <button
+                            key={block.dateString}
+                            onClick={() => setSelectedDate(block.dateString)}
+                            className={`relative flex shrink-0 flex-col items-center justify-center rounded-xl border px-3 py-1.5 transition min-w-[56px] min-h-[56px] ${selectedDate === block.dateString
+                                ? 'bg-slate-900 border-slate-900 text-white shadow-md'
+                                : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700'
+                                } ${block.dateString === getLocalDateString(today) && selectedDate !== block.dateString ? 'border-blue-400 bg-blue-50/30' : ''}`}
+                        >
+                            <span className="text-[10px] font-medium uppercase tracking-wider opacity-80">{block.dayName}</span>
+                            <span className="text-lg font-bold mt-0.5" style={{ lineHeight: 1 }}>{block.dayNum}</span>
+
+                            {datesWithTasks.has(block.dateString) && (
+                                <span className={`absolute bottom-1 h-1.5 w-1.5 rounded-full ${selectedDate === block.dateString ? 'bg-white' : 'bg-blue-500'}`}></span>
+                            )}
+                        </button>
+                    ))}
                 </div>
 
                 <div className="mt-6">
@@ -137,9 +231,9 @@ export function DashboardPage() {
                                 Retry
                             </button>
                         </div>
-                    ) : tasks && tasks.length > 0 ? (
+                    ) : sortedTasks && sortedTasks.length > 0 ? (
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            {tasks.map((task) => (
+                            {sortedTasks.map((task) => (
                                 <TaskCard
                                     key={task.id}
                                     task={task}

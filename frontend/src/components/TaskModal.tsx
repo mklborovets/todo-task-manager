@@ -21,6 +21,7 @@ export function TaskModal({
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [status, setStatus] = useState<TaskStatus>('todo');
+    const [dueDate, setDueDate] = useState('');
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -28,10 +29,12 @@ export function TaskModal({
             setTitle(initialTask.title);
             setDescription(initialTask.description ?? '');
             setStatus(initialTask.status);
+            setDueDate(initialTask.dueDate ? initialTask.dueDate.substring(0, 10) : '');
         } else {
             setTitle('');
             setDescription('');
             setStatus('todo');
+            setDueDate('');
         }
         setError(null);
     }, [initialTask, isOpen]);
@@ -56,13 +59,15 @@ export function TaskModal({
             if (initialTask) {
                 await onSubmit({
                     title: trimmedTitle,
-                    description: trimmedDescription || undefined,
+                    description: trimmedDescription || null,
+                    dueDate: dueDate || null,
                     status,
                 });
             } else {
                 await onSubmit({
                     title: trimmedTitle,
                     ...(trimmedDescription ? { description: trimmedDescription } : {}),
+                    ...(dueDate ? { dueDate } : {}),
                     status,
                 });
             }
@@ -150,6 +155,22 @@ export function TaskModal({
                                 <option value="in_progress">In Progress</option>
                                 <option value="done">Done</option>
                             </select>
+                        </div>
+
+                        <div>
+                            <label
+                                htmlFor="task-due-date"
+                                className="block text-sm font-medium text-slate-700"
+                            >
+                                Due Date <span className="text-slate-400">(optional)</span>
+                            </label>
+                            <input
+                                id="task-due-date"
+                                type="date"
+                                value={dueDate}
+                                onChange={(e) => setDueDate(e.target.value)}
+                                className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+                            />
                         </div>
                     </div>
 

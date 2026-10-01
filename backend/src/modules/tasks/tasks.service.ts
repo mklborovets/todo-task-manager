@@ -33,6 +33,7 @@ export class TasksService {
         return Task.create({
             title: dto.title,
             description: dto.description ?? null,
+            dueDate: dto.dueDate || null,
             status: dto.status,
             userId,
         });
@@ -46,6 +47,9 @@ export class TasksService {
         }
         if (dto.description !== undefined) {
             task.description = dto.description;
+        }
+        if (dto.dueDate !== undefined) {
+            task.dueDate = dto.dueDate || null;
         }
         if (dto.status !== undefined) {
             task.status = dto.status;

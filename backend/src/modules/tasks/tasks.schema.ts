@@ -5,6 +5,7 @@ export const createTaskSchema = z.object({
     body: z.object({
         title: z.string().trim().min(1, 'Title is required').max(150, 'Title is too long'),
         description: z.string().trim().max(2000, 'Description is too long').nullable().optional(),
+        dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (must be YYYY-MM-DD)').nullable().optional(),
         status: z.nativeEnum(TaskStatus).optional().default(TaskStatus.TODO),
     }),
 });
@@ -16,6 +17,7 @@ export const updateTaskSchema = z.object({
     body: z.object({
         title: z.string().trim().min(1, 'Title cannot be empty').max(150, 'Title is too long').optional(),
         description: z.string().trim().max(2000, 'Description is too long').nullable().optional(),
+        dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (must be YYYY-MM-DD)').nullable().optional(),
         status: z.nativeEnum(TaskStatus).optional(),
     }),
 });

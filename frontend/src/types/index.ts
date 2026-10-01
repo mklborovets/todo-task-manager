@@ -17,18 +17,21 @@ export interface Task {
     description: string | null;
     status: TaskStatus;
     userId: string;
+    dueDate: string | null;
     createdAt: string;
     updatedAt: string;
 }
 
 export interface CreateTaskPayload {
     title: string;
-    description?: string;
+    description?: string | null;
+    dueDate?: string | null;
     status?: TaskStatus;
 }
 
 export interface UpdateTaskPayload {
     title?: string;
     description?: string | null;
+    dueDate?: string | null;
     status?: TaskStatus;
 }

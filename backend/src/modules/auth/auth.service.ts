@@ -4,6 +4,7 @@ import { User } from './user.model';
 import { RegisterDto, LoginDto } from './auth.schema';
 import { AppError } from '../../common/errors/app-error';
 import { env } from '../../config/env';
+import { UniqueConstraintError } from 'sequelize';
 
 const SALT_ROUNDS = 10;
 
@@ -24,10 +25,18 @@ export class AuthService {
 
         const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
 
-        const user = await User.create({
-            email: dto.email,
-            passwordHash,
-        });
+        let user;
+        try {
+            user = await User.create({
+                email: dto.email,
+                passwordHash,
+            });
+        } catch (error) {
+            if (error instanceof UniqueConstraintError) {
+                throw new AppError('User with this email already exists', 409);
+            }
+            throw error;
+        }
 
         const token = this.generateToken(user.id, user.email);
 

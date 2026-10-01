@@ -14,12 +14,13 @@ export interface TaskAttributes {
     description: string | null;
     status: TaskStatus;
     userId: string;
+    dueDate: string | null;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
 export interface TaskCreationAttributes
-    extends Optional<TaskAttributes, 'id' | 'description' | 'status'> { }
+    extends Optional<TaskAttributes, 'id' | 'description' | 'status' | 'dueDate'> { }
 
 @Table({
     tableName: 'tasks',
@@ -59,6 +60,13 @@ export class Task extends Model<TaskAttributes, TaskCreationAttributes> {
         defaultValue: TaskStatus.TODO,
     })
     declare status: TaskStatus;
+
+    @Column({
+        type: DataType.DATEONLY,
+        allowNull: true,
+        defaultValue: null,
+    })
+    declare dueDate: string | null;
 
     @ForeignKey(() => User)
     @Column({

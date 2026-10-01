@@ -29,7 +29,9 @@ export const errorHandler = (
     console.error('Unhandled error:', err);
     res.status(500).json({
         message: 'Internal server error',
-        error: String(err),
-        stack: err instanceof Error ? err.stack : undefined
+        ...(process.env.NODE_ENV === 'development' && {
+            error: String(err),
+            stack: err instanceof Error ? err.stack : undefined
+        })
     });
 };

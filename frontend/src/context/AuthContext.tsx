@@ -37,9 +37,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
+    const logout = useCallback(() => {
+        localStorage.removeItem('token');
+        setUser(null);
+        queryClient.clear();
+    }, [queryClient]);
+
     useEffect(() => {
         void initAuth();
-    }, [initAuth]);
+
+        const handleUnauthorized = () => {
+            logout();
+        };
+
+        window.addEventListener('auth:unauthorized', handleUnauthorized);
+        return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    }, [initAuth, logout]);
 
     const login = async (credentials: AuthCredentials) => {
         const data = await authApi.login(credentials);
@@ -51,12 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await authApi.register(credentials);
         localStorage.setItem('token', data.token);
         setUser(data.user);
-    };
-
-    const logout = () => {
-        localStorage.removeItem('token');
-        setUser(null);
-        queryClient.clear();
     };
 
     return (

@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute, GuestRoute } from './components/RouteGuards';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { DashboardPage } from './pages/DashboardPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -13,24 +14,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-function DashboardPlaceholder() {
-  const { user, logout } = useAuth();
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-50">
-      <p className="text-sm font-medium text-slate-700">
-        Signed in as <span className="font-semibold text-slate-900">{user?.email}</span>
-      </p>
-      <button
-        onClick={logout}
-        className="px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition cursor-pointer"
-      >
-        Sign out
-      </button>
-    </div>
-  );
-}
 
 export function App() {
   return (
@@ -44,7 +27,7 @@ export function App() {
             </Route>
 
             <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<DashboardPlaceholder />} />
+              <Route path="/" element={<DashboardPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

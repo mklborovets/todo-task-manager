@@ -7,8 +7,8 @@ export function ProtectedRoute() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-slate-50">
-                <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+            <div className="flex min-h-screen items-center justify-center bg-slate-50">
+                <Loader2 className="h-8 w-8 animate-spin text-slate-600" />
             </div>
         );
     }
@@ -25,8 +25,8 @@ export function GuestRoute() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-slate-50">
-                <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+            <div className="flex min-h-screen items-center justify-center bg-slate-50">
+                <Loader2 className="h-8 w-8 animate-spin text-slate-600" />
             </div>
         );
     }

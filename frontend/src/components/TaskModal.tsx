@@ -108,7 +108,7 @@ export function TaskModal({
                                 id="task-title"
                                 type="text"
                                 required
-                                maxLength={255}
+                                maxLength={150}
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 placeholder="What needs to be done?"

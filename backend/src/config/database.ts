@@ -7,12 +7,14 @@ export const sequelize = new Sequelize(env.DATABASE_URL, {
     dialect: 'postgres',
     models: [User, Task],
     logging: false,
-    dialectOptions: {
-        ssl: {
-            require: true,
-            rejectUnauthorized: false,
+    ...(env.NODE_ENV === 'production' && {
+        dialectOptions: {
+            ssl: {
+                require: true,
+                rejectUnauthorized: false,
+            },
         },
-    },
+    }),
     pool: {
         max: 5,
         min: 0,

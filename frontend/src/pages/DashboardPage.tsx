@@ -65,7 +65,9 @@ export function DashboardPage() {
     };
 
     const handleDeleteTask = (id: string) => {
-        deleteTaskMutation.mutate(id);
+        if (window.confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
+            deleteTaskMutation.mutate(id);
+        }
     };
 
     return (
@@ -144,8 +146,8 @@ export function DashboardPage() {
                                     onEdit={handleOpenEditModal}
                                     onDelete={handleDeleteTask}
                                     onStatusChange={handleStatusChange}
-                                    isUpdating={updateTaskMutation.isPending}
-                                    isDeleting={deleteTaskMutation.isPending}
+                                    isUpdating={updateTaskMutation.isPending && updateTaskMutation.variables?.id === task.id}
+                                    isDeleting={deleteTaskMutation.isPending && deleteTaskMutation.variables === task.id}
                                 />
                             ))}
                         </div>

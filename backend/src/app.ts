@@ -2,6 +2,9 @@ import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { env } from './config/env';
+import { authRouter } from './modules/auth/auth.routes';
+import { tasksRouter } from './modules/tasks/tasks.routes';
+import { errorHandler } from './common/middlewares/error.middleware';
 
 export const app: Application = express();
 
@@ -20,3 +23,8 @@ app.get('/api/health', (_req: Request, res: Response) => {
         timestamp: new Date().toISOString(),
     });
 });
+
+app.use('/api/auth', authRouter);
+app.use('/api/tasks', tasksRouter);
+
+app.use(errorHandler);
